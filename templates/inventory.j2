@@ -84,8 +84,8 @@ template_service_broker_install=false
 openshift_router_selector='region=infra'
 openshift_registry_selector='region=infra'
 {% if generator_multi_infra == True %}
-openshift_hosted_registry_replicas={{ generator_infra_count }}
-openshift_hosted_router_replicas={{ generator_infra_count }}
+openshift_hosted_registry_replicas={{ generator_infra_replicas }}
+openshift_hosted_router_replicas={{ generator_infra_replicas }}
 {% endif %}
 osm_default_node_selector='region=primary'
 

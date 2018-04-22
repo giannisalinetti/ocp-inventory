@@ -11,7 +11,7 @@ generator_install_version: v3.7
 generator_ssh_user: root
 generator_multi_master: True
 generator_multi_infra: False
-generator_infra_count: 3
+generator_infra_replicas: 3
 generator_nfs_enabled: True
 generator_haproxy_enabled: True
 generator_skip_checks: True
