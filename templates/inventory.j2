@@ -1,0 +1,210 @@
+# OpenShift {{ generator_deployment_type }} advanced installation
+[OSEv3:children]
+masters
+etcd
+nodes
+{% if generator_nfs_enabled == True %}
+nfs
+{% endif %}
+{% if generator_haproxy_enabled == True and generator_multi_master == True %}
+lb
+{% endif %}
+
+[OSEv3:vars]
+ansible_ssh_user={{ generator_ssh_user }}
+deployment_type={{ generator_deployment_type }}
+openshift_release={{ generator_install_version }}
+
+# Disable disk and memory checks
+{% if generator_skip_checks == True %}
+openshift_disable_check=memory_availability,disk_availability,docker_storage,docker_storage_driver,docker_image_availability,package_version,package_availability,package_update
+{% endif %}
+
+{% if generator_multi_master == True %}
+# Configure cluster
+openshift_master_cluster_method={{ generator_cluster_method }}
+openshift_master_cluster_hostname={{ generator_cluster_hostname }}
+openshift_master_cluster_public_hostname={{ generator_cluster_public_hostname }}
+{% endif %}
+
+{% if generator_containerized_deploy == True %}
+# Deploy Containerized components
+{% if generator_containerized_ovs == True %}
+openshift_use_openvswitch_system_container=True
+{% endif %}
+{% if generator_containerized_node == True %}
+openshift_use_node_system_container=True
+{% endif %}
+{% if generator_containerized_master == True %}
+openshift_use_master_system_container=True
+{% endif %}
+{% if generator_containerized_etcd == True %}
+openshift_use_etcd_system_container=True
+{% endif %}
+system_images_registry={{ generator_system_images_registry }}
+{% endif %}
+
+{% if generator_openshift_use_crio == True and openshift_release == 'v3.9' %}
+# CRI-O configuration
+openshift_use_crio=True
+{% if generator_openshift_crio_use_rpm == True %}
+openshift_crio_use_rpm=True
+#openshift_docker_systemcontainer_image_override="registry.example.com/container-engine:latest"
+#openshift_crio_systemcontainer_image_override="registry.example.com/cri-o:latest"
+#openshift_crio_enable_docker_gc=True
+#openshift_crio_docker_gc_node_selector={'runtime': 'cri-o'}
+{% endif %}
+{% endif %}
+
+# Configure authentication
+# Users must be defined on master node using htpasswd command
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+# Configure default subdomain
+{% if generator_multi_infra == False and generator_use_xip == True %}
+openshift_master_default_subdomain={{ generator_infra_ipv4 }}.xip.io
+{% else %}
+openshift_master_default_subdomain={{ generator_ext_dns_wildcard }}
+{% endif %}
+
+# Configure Network SDN plugin
+{% if generator_sdn_plugin == 'ovs-multitenant' %}
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+{% elif generator_sdn_plugin == 'ovs-networkpolicy' %}
+os_sdn_network_plugin_name='redhat/openshift-ovs-networkpolicy'
+{% endif %}
+
+{% if generator_disable_service_catalog == True %}
+# Disable service catalog
+openshift_enable_service_catalog=false
+template_service_broker_install=false
+{% endif %}
+
+# Configure default pod selectors
+openshift_router_selector='region=infra'
+openshift_registry_selector='region=infra'
+{% if generator_multi_infra == True %}
+openshift_hosted_registry_replicas={{ generator_infra_count }}
+openshift_hosted_router_replicas={{ generator_infra_count }}
+{% endif %}
+osm_default_node_selector='region=primary'
+
+{% if generator_multi_master == True %}
+# Configure osn storage plugins
+osn_storage_plugin_deps=['glusterfs']
+{% endif %}
+
+{% if generator_nfs_enabled == True and generator_registry_use_cluster_nfs == True %}
+# Configure Registry storage
+openshift_hosted_registry_storage_kind=nfs
+openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
+openshift_hosted_registry_storage_nfs_directory=/exports
+openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_registry_storage_volume_name=registry
+openshift_hosted_registry_storage_volume_size=20Gi
+{% endif %}
+
+{% if generator_metrics_enabled == True %}
+# Configure Cluster Metrics
+openshift_metrics_install_metrics=true
+{% if generator_deploy_hosa == True %}
+openshift_metrics_install_hawkular_agent=true
+{% endif %}
+openshift_metrics_cassandra_nodeselector={"region":"infra"}
+openshift_metrics_hawkular_nodeselector={"region":"infra"}
+openshift_metrics_heapster_nodeselector={"region":"infra"}
+
+{% if generator_nfs_enabled == True and generator_metrics_use_cluster_nfs == True %}
+# Configure Metrics Storage
+openshift_metrics_storage_kind=nfs
+openshift_metrics_storage_access_modes=['ReadWriteOnce']
+openshift_metrics_storage_nfs_directory=/exports
+openshift_metrics_storage_nfs_options='*(rw,root_squash)'
+openshift_metrics_storage_volume_name=metrics
+openshift_metrics_storage_volume_size=2Gi
+{% endif %}
+{% endif %}
+
+{% if generator_prometheus_enabled == True %}
+# Deploy Prometheus
+openshift_hosted_prometheus_deploy=true
+
+{% if generator_nfs_enabled == True and generator_prometheus_use_cluster_nfs == True %}
+# Prometheus storage config
+openshift_prometheus_storage_kind=nfs
+openshift_prometheus_storage_access_modes=['ReadWriteOnce']
+openshift_prometheus_storage_nfs_directory=/exports
+openshift_prometheus_storage_nfs_options='*(rw,root_squash)'
+openshift_prometheus_storage_volume_name=prometheus
+openshift_prometheus_storage_volume_size=10Gi
+openshift_prometheus_storage_labels={'storage': 'prometheus'}
+openshift_prometheus_storage_type='pvc'
+openshift_prometheus_storage_class=glusterfs-storage
+# For prometheus-alertmanager
+openshift_prometheus_alertmanager_storage_kind=nfs
+openshift_prometheus_alertmanager_storage_access_modes=['ReadWriteOnce']
+openshift_prometheus_alertmanager_storage_nfs_directory=/exports
+openshift_prometheus_alertmanager_storage_nfs_options='*(rw,root_squash)'
+openshift_prometheus_alertmanager_storage_volume_name=prometheus-alertmanager
+openshift_prometheus_alertmanager_storage_volume_size=10Gi
+openshift_prometheus_alertmanager_storage_labels={'storage': 'prometheus-alertmanager'}
+openshift_prometheus_alertmanager_storage_type='pvc'
+openshift_prometheus_alertmanager_storage_class=glusterfs-storage
+# For prometheus-alertbuffer
+openshift_prometheus_alertbuffer_storage_kind=nfs
+openshift_prometheus_alertbuffer_storage_access_modes=['ReadWriteOnce']
+openshift_prometheus_alertbuffer_storage_nfs_directory=/exports
+openshift_prometheus_alertbuffer_storage_nfs_options='*(rw,root_squash)'
+openshift_prometheus_alertbuffer_storage_volume_name=prometheus-alertbuffer
+openshift_prometheus_alertbuffer_storage_volume_size=10Gi
+openshift_prometheus_alertbuffer_storage_labels={'storage': 'prometheus-alertbuffer'}
+openshift_prometheus_alertbuffer_storage_type='pvc'
+openshift_prometheus_alertbuffer_storage_class=glusterfs-storage
+{% endif %}
+{% endif %}
+
+{% if generator_logging_enabled == True %}
+# Configure Cluster logging
+openshift_logging_install_logging=false
+openshift_logging_kibana_nodeselector={"region":"infra"}
+openshift_logging_es_nodeselector={"region":"infra"}
+
+{% if generator_nfs_enabled == True and generator_logging_use_cluster_nfs == True %}
+# Configure Logging Storage
+openshift_logging_storage_kind=nfs
+openshift_logging_storage_access_modes=['ReadWriteOnce']
+openshift_logging_storage_nfs_directory=/exports
+openshift_logging_storage_nfs_options='*(rw,root_squash)'
+openshift_logging_storage_volume_name=logging
+openshift_logging_storage_volume_size=2Gi
+{% endif %}
+{% endif %}
+
+[masters]
+{% for item in generator_masters_list %}
+{{ item }}
+{% endfor %}
+
+[etcd]
+{% for item in generator_etcd_list %}
+{{ item }}
+{% endfor %}
+
+{% if generator_nfs_enabled == True %}
+[nfs]
+{% for item in generator_nfs_list %}
+{{ item }}
+{% endfor %}
+{% endif %}
+
+{% if generator_haproxy_enabled == True and generator_multi_master == True %}
+[lb]
+{% for item in generator_lb_list %}
+{{ item }}
+{% endfor %}
+{% endif %}
+
+[nodes]
+{% for item in generator_nodes_map %}
+{{ item.name }} {{ item.labels }}
+{% endfor %}

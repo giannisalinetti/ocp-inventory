@@ -1,0 +1,22 @@
+---
+- name: "Test inventory generator"
+  hosts: localhost
+  tasks:
+    - name: "Call generator role"
+      include_role:
+        name: ocp-inventory
+      vars:
+        generator_inventory_dir: /tmp
+        generator_masters_list:
+          - master1.example.com
+        generator_etcd_list:
+          - master1.example.com
+        generator_nfs_list:
+          - master1.example.com
+        generator_nodes_map:
+          - name: master1.example.com
+            labels: ""
+          - name: node1.example.com
+            labels: "openshift_node_labels=\"{\'region\': \'infra\'}\""
+          - name: node2.example.com
+            labels: "openshift_node_labels=\"{\'region\': \'primary\'}\""

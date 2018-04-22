@@ -1,0 +1,71 @@
+---
+# defaults file for ocp-inventory
+
+# Generated file destination folder
+generator_inventory_dir: /etc/ansible
+
+# OSEv3 Variables Section
+# Deployment type can be either enterprise or origin
+generator_deployment_type: enterprise
+generator_install_version: v3.7
+generator_ssh_user: root
+generator_multi_master: True
+generator_multi_infra: False
+generator_infra_count: 3
+generator_nfs_enabled: True
+generator_haproxy_enabled: True
+generator_skip_checks: True
+generator_cluster_method: native
+generator_cluster_hostname: ocp.lab.example.com
+generator_cluster_public_hostname: ocp.lab.example.com
+
+# OpenShift Containerized Deployment options
+generator_containerized_deploy: True
+generator_containerized_ovs: True
+generator_containerized_node: True
+generator_containerized_master: True
+generator_containerized_etcd: True
+generator_system_images_registry: "registry.access.redhat.com"
+
+# New CRI-O deployment (from v3.9 only)
+generator_openshift_use_crio: False
+generator_openshift_crio_use_rpm: False
+
+# Application subdomain section
+generator_use_xip: True
+generator_infra_ipv4: 192.168.122.200
+generator_ext_dns_wildcard: cloudapps.lab.example.com
+
+# SDN configuration. Options: ovs-multitenant, ovs-subnet, ovs-networkpolicy
+generator_sdn_plugin: ovs-multitenant
+
+# ServiceCatalog deployment
+generator_disable_service_catalog: True
+
+# Registry Storage
+generator_registry_use_cluster_nfs: True
+
+# Metrics configuration
+generator_metrics_enabled: True
+generator_deploy_hosa: False
+generator_metrics_use_cluster_nfs: True
+
+# Prometheus configuration
+generator_prometheus_enabled: True
+generator_prometheus_use_cluster_nfs: True
+
+# Logging configuration
+generator_logging_enabled: True
+generator_logging_use_cluster_nfs: True
+
+
+# Hosts section
+generator_masters_list: []
+
+generator_etcd_list: []
+
+generator_nfs_list: []
+
+generator_lb_list: []
+
+generator_nodes_map: []

@@ -1,0 +1,7 @@
+---
+# tasks file for ocp-inventory
+- name: "Template out inventory file for OpenShift deployment"
+  template:
+      src: inventory.j2
+      dest: '{{ generator_inventory_dir }}/inventory'
+      mode: 0644
