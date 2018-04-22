@@ -20,7 +20,8 @@ Some further tuning of the generated inventory file could be needed after runnin
 Example Playbooks
 ----------------
 
-Including some example of how to use the role for single master or multi master deployments:
+Including some example of how to use the role for single master or multi master deployments.
+Playbook with vars prompt can be implemented.
 
     - name: "Single master deployment"
       hosts: localhost
@@ -90,10 +91,11 @@ Including some example of how to use the role for single master or multi master 
 TODO
 ----
 
-Add GlusterFS support.
-Add External NFS storage support.
-Add Cinder Volumes support.
-Add VMWare storage support.
+- Add GlusterFS support.
+- Add External NFS storage support.
+- Add Cinder Volumes support.
+- Add VMWare storage support.
+- Add in
 
 License
 -------
