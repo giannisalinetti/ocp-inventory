@@ -21,7 +21,8 @@ Example Playbooks
 ----------------
 
 Including some example of how to use the role for single master or multi master deployments.
-Playbook with vars prompt can be implemented.
+Playbook with prompted variables can be implemented using vars_prompt.
+**IMPORTANT**: single and double quotes used in node labels must be escaped.
 
     - name: "Single master deployment"
       hosts: localhost
@@ -48,12 +49,15 @@ Playbook with vars prompt can be implemented.
 
     - name: "Multi master deployment"
       hosts: localhost
+      vars_prompt:
+        - name: generator_inventory_dir
+          prompt: "Inventory ouput directory"
+          private: no
       tasks:
         - name: "Call generator role"
           include_role:
             name: ocp-inventory
           vars:
-            generator_inventory_dir: /foo/bar
             generator_install_version: v3.9
             generator_multi_master: True
             generator_multi_infra: True
@@ -95,7 +99,6 @@ TODO
 - Add External NFS storage support.
 - Add Cinder Volumes support.
 - Add VMWare storage support.
-- Add in
 
 License
 -------
